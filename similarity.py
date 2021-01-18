@@ -49,13 +49,18 @@ class matching_matrix():
         self.sizes_B = {}
         self.update_B = {}
 
-    def merge_rows(self, i_1, i_2, isize, k): 
-        
+    def relabel_A(self, i_1, i_2, k):
+    
         """
-
-        Parameters 
+        
+        Relabelling procedure for A. An entry is added to update_A for each
+        newly formed cluster mapping the index `n+k` to the index of the largest of the 
+        two clusters that merged in order to create the newly formed cluster. This relabeling 
+        is to decrese the number of insertions into a dictionary when cluster merge and consequently
+        decreases execution time. If both clusters contain only one point the original index is returned.
+        
+        Parameters
         ----------
-
         i_1 : int 
              The label of the first cluster to be merged in 
              hierarhical clustering A
@@ -63,68 +68,105 @@ class matching_matrix():
         i_2 : int 
             The label of the second cluster to be merged in 
             hierarchical clustering A 
-
-        isize: int 
-            The size of the resulting cluster in the
-            hierarchical clustering A once the merge 
-            has taken place. 
-
+            
         k: int 
             The number of merges that have already taken place 
             in the hierarchical clustering A. 
-
+            
+        Returns
+        -------
+        i_1 : int
+            Index in the row dictionary of the cluster with the least number of points. 
+             
+        i_2 : int
+            Index in the row dictionary of the cluster with the largest number of points.
+        
         """
-
-        # Relabelling procedure for A. This is used so the new cluster 
-        # can be created by adding the smallest old cluster onto the 
-        # largest old cluster. This is to save substantial time in 
-        # the case of some inputs.        
+      
+       
         if i_1 >= self.n: 
             i_1 = self.update_A.pop(i_1) 
 
         if i_2 >= self.n: 
             i_2 = self.update_A.pop(i_2) 
 
-        if (self.rtot[i_1] >= self.rtot[i_2] and
-            i_1 >= self.n and i_2 >= self.n): 
-            i_1 , i_2 = i_2, i_1
+        if (self.rtot[i_1] >= self.rtot[i_2]) and (i_1 >= self.n and i_2 >= self.n): 
+            i_1, i_2 = i_2, i_1
         
-        self.update_A[k + self.n] = i_2 
+        self.update_A[k + self.n] = i_2
 
-        # Updates the row totals and the value of P
+        return i_1, i_2
+
+    def relabel_B(self, j_1, j_2, k):
+
+        """
+        
+        Relabelling procedure for B. An entry is added to update_B for each
+        newly formed cluster mapping the index `n+k` to the index of the largest of the 
+        two clusters that merged in order to create the newly formed cluster. This relabeling 
+        is to decrese the number of insertions into a dictionary when cluster merge and consequently
+        decreases execution time. If both clusters contain only one point the original index is returned.
+        
+        Parameters
+        ----------
+
+        j_1 : int 
+             The label of the first cluster to be merged in 
+             hierarhical clustering B
+
+        j_2 : int 
+            The label of the second cluster to be merged in 
+            hierarchical clustering B 
+            
+        k: int 
+            The number of merges that have already taken place 
+            in the hierarchical clustering B.  
+            
+        Returns
+        -------
+        i_1 : int
+            Index in the row dictionary of the cluster with the least number of points. 
+             
+        i_2 : int
+            Index in the row dictionary of the cluster with the largest number of points.
+        
+        """
+        
+        if j_1 >= self.n: 
+            j_1 = self.update_B.pop(j_1)
+
+        if j_2 >= self.n: 
+            j_2 = self.update_B.pop(j_2)
+
+        if (self.ctot[j_1] >= self.ctot[j_2]) and (j_1 >= self.n and j_2 >= self.n): 
+            j_1, j_2 = j_2, j_1 
+
+        self.update_B[k+self.n] = j_2
+        
+        return j_1, j_2
+    
+    def update_row_totals_and_P(self, i_1, i_2):
+    
+        '''
+        
+        Parameters 
+        ----------
+        
+        i_1 : int 
+             The label of the first cluster to be merged in 
+             hierarhical clustering A
+
+        i_2 : int 
+            The label of the second cluster to be merged in 
+            hierarchical clustering A 
+        '''
+    
         rtot1, rtot2 = self.rtot.pop(i_1), self.rtot[i_2]
         self.rtot[i_2] = rsum = rtot1 + rtot2
         self.P += sum([rsum**2, -rtot1**2, -rtot2**2]) // 2
-
-        # Procedure used to merge the clusters in A, the variable 'st' 
-        # is used to store the increase in T. The column version of 
-        # the matrix is updated at the same time. We add the smallest 
-        # row r1 to the largest row r2. 
-        
-        r1, r2, st = self.rows.pop(i_1), self.rows[i_2], 0
-        
-        # For every element in the smallest row, if it's not there then 
-        # add it, if it is then add it on and update the value of T. In 
-        # either case update the column dictionary with the change.  
-
-        for elem in r1: 
-          
-            if elem not in r2:
-                r2[elem]=self.columns[elem][i_2] = self.columns[elem].pop(i_1)
- 
-            else: 
-                value_1 = self.columns[elem].pop(i_1)
-                value_2 = self.columns[elem][i_2]
-                value_new = value_1 + value_2
-                r2[elem] = self.columns[elem][i_2] = value_new
-                st += sum((value_new**2,-value_1**2, -value_2**2))
-
-        self.T += st // 2
-        self.rows[i_2] = r2
-
-
-    def merge_cols(self, j_1, j_2, jsize, k):
-
+    
+    def update_column_totals_and_Q(self, j_1, j_2):
+    
         """
 
         Parameters 
@@ -137,40 +179,80 @@ class matching_matrix():
         j_2 : int 
             The label of the second cluster to be merged in 
             hierarchical clustering B 
-
-        jsize: int 
-            The size of the resulting cluster in the
-            hierarchical clustering B once the merge 
-            has taken place. 
-
-        k: int 
-            The number of merges that have already taken place 
-            in the hierarchical clustering B. 
-
+            
         """
-
-        # Relabelling procedure for B
-
-        if j_1 >= self.n: 
-            j_1 = self.update_B.pop(j_1)
-
-        if j_2 >= self.n: 
-            j_2 = self.update_B.pop(j_2)
-
-        if (self.ctot[j_1] >= self.ctot[j_2] and 
-            j_1 >= self.n and j_2 >= self.n): 
-            j_1, j_2 = j_2, j_1 
-
-        self.update_B[k+self.n] = j_2
-
-        # Update the column totals and Q 
-
+        
         ctot1, ctot2 = self.ctot.pop(j_1), self.ctot[j_2]
         self.ctot[j_2] = csum = ctot1 + ctot2
         self.Q += sum([csum**2, -ctot1**2, -ctot2**2]) // 2
+    
+    def update_row_dictionary_and_T(self, i_1, i_2):
+    
+        """
+        Procedure used to merge the clusters in A, the variable 'st' 
+        is used to store the increase in T. The column version of 
+        the matrix is updated at the same time. We add the smallest 
+        row r1 to the largest row r2. 
+        
+        For every element in the smallest row, if it's not in the other row then 
+        add it, if it is then add it on and update the value of T. In 
+        either case update the column dictionary with the change.
+        
+        Parameters 
+        ----------
+        
+        i_1 : int 
+            The label of the first cluster to be merged in 
+            hierarhical clustering A
 
-        # Procedure used to merge the clusters in B
+        i_2 : int 
+            The label of the second cluster to be merged in 
+            hierarchical clustering A 
+        
+        """
+        
+        r1, r2, st = self.rows.pop(i_1), self.rows[i_2], 0
 
+        for elem in r1: 
+          
+            if elem not in r2:
+                r2[elem] = self.columns[elem][i_2] = self.columns[elem].pop(i_1)
+ 
+            else: 
+                value_1 = self.columns[elem].pop(i_1)
+                value_2 = self.columns[elem][i_2]
+                value_new = value_1 + value_2
+                r2[elem] = self.columns[elem][i_2] = value_new
+                st += sum((value_new**2,-value_1**2, -value_2**2))
+
+        self.T += st // 2
+        self.rows[i_2] = r2
+        
+    def update_column_dictionary_and_T(self, j_1, j_2):
+    
+        """
+        Procedure used to merge the clusters in A, the variable 'st' 
+        is used to store the increase in T. The column version of 
+        the matrix is updated at the same time. We add the smallest 
+        row r1 to the largest row r2. 
+        
+        For every element in the smallest row, if it's not in the other row then 
+        add it, if it is then add it on and update the value of T. In 
+        either case update the column dictionary with the change.
+        
+        Parameters 
+        ----------
+
+        j_1 : int 
+             The label of the first cluster to be merged in 
+             hierarhical clustering B
+
+        j_2 : int 
+            The label of the second cluster to be merged in 
+            hierarchical clustering B 
+        
+        """
+        
         c1, c2, st = self.columns.pop(j_1), self.columns[j_2], 0  
         
         for elem in c1: 
@@ -187,9 +269,59 @@ class matching_matrix():
 
         self.columns[j_2] = c2
         self.T += st // 2
+    
+    def merge_rows(self, i_1, i_2, k): 
+    
+        
+        """
 
+        Parameters 
+        ----------
 
-    def merge(self, i_1, i_2, j_1, j_2, isize, jsize, k):
+        i_1 : int 
+             The label of the first cluster to be merged in 
+             hierarhical clustering A
+
+        i_2 : int 
+            The label of the second cluster to be merged in 
+            hierarchical clustering A 
+
+        k: int 
+            The number of merges that have already taken place 
+            in the hierarchical clustering A. 
+
+        """
+        
+        i_1, i_2 = self.relabel_A(i_1, i_2, k)
+        self.update_row_totals_and_P(i_1, i_2)
+        self.update_row_dictionary_and_T(i_1, i_2)
+        
+    def merge_cols(self, j_1, j_2, k):
+
+        """
+
+        Parameters 
+        ----------
+
+        j_1 : int 
+             The label of the first cluster to be merged in 
+             hierarhical clustering B
+
+        j_2 : int 
+            The label of the second cluster to be merged in 
+            hierarchical clustering B  
+
+        k: int 
+            The number of merges that have already taken place 
+            in the hierarchical clustering B. 
+
+        """
+        
+        j_1, j_2 = self.relabel_B(j_1, j_2, k)
+        self.update_column_totals_and_Q(j_1, j_2)
+        self.update_column_dictionary_and_T(j_1, j_2)
+
+    def merge(self, i_1, i_2, j_1, j_2, k):
         
         """
         Parameters
@@ -203,21 +335,14 @@ class matching_matrix():
             The labels of the two clusters to be merged in the 
             clustering B. 
         
-        isize : integer
-            The size of the resultant cluster for A. 
-        
-        jsize : integer 
-            The size of the resultant cluster for B. 
-        
         k : integer
             Number of merges that have taken place before this merge 
 
         """
 
-        self.merge_rows(i_1, i_2, isize, k) 
-        self.merge_cols(j_1, j_2, jsize, k) 
+        self.merge_rows(i_1, i_2, k) 
+        self.merge_cols(j_1, j_2, k) 
         return (self.T, self.P, self.Q)
-
 
 class matching_matrix_proportion():
 
@@ -232,7 +357,7 @@ class matching_matrix_proportion():
         self.maximums = np.zeros(self.k)
         self.where = np.zeros(self.k)
 
-    def merge_rows(self, i_1, i_2, isize, k): 
+    def merge_rows(self, i_1, i_2, k): 
     
         if i_1 >= self.n: 
             i_1 = self.update_A.pop(i_1) 
@@ -317,7 +442,7 @@ class matching_matrix_pairs():
         self.Q = (sum([i ** 2 for i in c.values()]) - n) // 2 
         self.update_A = {}
 
-    def merge_rows(self, i_1, i_2, isize, k): 
+    def merge_rows(self, i_1, i_2, k): 
     
         if i_1 >= self.n: 
             i_1 = self.update_A.pop(i_1) 

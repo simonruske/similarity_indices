@@ -33,12 +33,12 @@ class TestMatchingMatrix(unittest.TestCase):
     #================
     #-------A--------
     #================
-    #  i1, i2, i_size
-    
-    #[  3,  4,  2]
-    #[  1,  5,  3]
-    #[  0,  2,  2]
-    #[  6,  7,  5]  
+    #  i1, i2 
+              
+    #[  3,  4 ]
+    #[  1,  5 ]
+    #[  0,  2 ]
+    #[  6,  7 ]
 
     #================
     #-------B--------
@@ -62,7 +62,7 @@ class TestMatchingMatrix(unittest.TestCase):
       1  1  1  1  1
     
     '''
-    m.merge_rows(i_1 = 3, i_2 = 4, isize = 2, k = 0)
+    m.merge_rows(i_1 = 3, i_2 = 4, k = 0)
     
     self.assertEqual(0, m.T)
     self.assertEqual(1, m.P)
@@ -77,7 +77,7 @@ class TestMatchingMatrix(unittest.TestCase):
       1, 1, 1, 2
     '''
     
-    m.merge_cols(j_1 = 3, j_2 = 4, jsize = 2, k = 0)
+    m.merge_cols(j_1 = 3, j_2 = 4, k = 0)
     
     self.assertEqual(1, m.T)
     self.assertEqual(1, m.P)
@@ -90,7 +90,7 @@ class TestMatchingMatrix(unittest.TestCase):
     6 [ 0, 1, 0, 2 ] 3
         1, 1, 1, 2 
     '''
-    m.merge_rows(i_1 = 1, i_2 = 5, isize = 3, k = 1)
+    m.merge_rows(i_1 = 1, i_2 = 5, k = 1)
     
     self.assertEqual(1, m.T)
     self.assertEqual(3, m.P)
@@ -103,7 +103,7 @@ class TestMatchingMatrix(unittest.TestCase):
     6 [ 0, 1, 2 ] 3
         2, 1, 2
     '''
-    m.merge_cols(j_1 = 0, j_2 = 2, jsize = 2, k = 1)
+    m.merge_cols(j_1 = 0, j_2 = 2, k = 1)
     
     self.assertEqual(1, m.T)
     self.assertEqual(3, m.P)
@@ -115,7 +115,7 @@ class TestMatchingMatrix(unittest.TestCase):
     6 [ 0, 1, 2 ] 3
         2, 1, 2
     '''
-    m.merge_rows(i_1 = 0, i_2 = 2, isize = 2, k = 2)
+    m.merge_rows(i_1 = 0, i_2 = 2, k = 2)
     
     self.assertEqual(2, m.T)
     self.assertEqual(4, m.P)
@@ -127,7 +127,7 @@ class TestMatchingMatrix(unittest.TestCase):
     6 [ 0, 3 ] 3
         2, 3
     '''
-    m.merge_cols(j_1 = 1, j_2 = 5, jsize = 3, k = 2)
+    m.merge_cols(j_1 = 1, j_2 = 5, k = 2)
     
     self.assertEqual(4, m.T)
     self.assertEqual(4, m.P)
@@ -140,7 +140,7 @@ class TestMatchingMatrix(unittest.TestCase):
         2, 3
     '''
     
-    m.merge_rows(i_1 = 6, i_2 = 7, isize = 5, k = 3)
+    m.merge_rows(i_1 = 6, i_2 = 7, k = 3)
     
     self.assertEqual(4 , m.T)
     self.assertEqual(10, m.P)
@@ -151,7 +151,7 @@ class TestMatchingMatrix(unittest.TestCase):
     8 [ 5 ] 5
         5
     '''
-    m.merge_cols(j_1 = 6, j_2 = 7, jsize = 5, k = 3)
+    m.merge_cols(j_1 = 6, j_2 = 7, k = 3)
     
     self.assertEqual(10, m.T)
     self.assertEqual(10, m.P)
