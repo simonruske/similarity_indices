@@ -27,7 +27,7 @@ class matching_matrix():
 
     """
 
-    def __init__(self, n, * args, **kwargs):        
+    def __init__(self, n):        
 
         # The matrix itself 
         self.rows = {x : {x:1} for x in range(n)}
@@ -346,8 +346,6 @@ class matching_matrix():
 
 class matching_matrix_proportion():
 
-    
-
     def __init__(self, sol, n, * args, **kwargs):        
         
         self.rows = {i : {int(j):1} for i, j in enumerate(sol)}
@@ -551,8 +549,7 @@ def TPQ_linkages(A, B):
     
     # Merges the required clusters as specified by the input files 
     for k, (rows_A, rows_B) in enumerate(zip(A, B)):
-        T[k], P[k], Q[k] = m.merge(rows_A[0], rows_A[1], 
-                                   rows_B[0], rows_B[1],rows_A[3], rows_B[3],k)
+        T[k], P[k], Q[k] = m.merge(rows_A[0], rows_A[1], rows_B[0], rows_B[1], k)
         
     #Outputs the values of T, P and Q. 
     return T[:-1], P[:-1], Q[:-1] 
