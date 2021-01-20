@@ -90,7 +90,7 @@ class matching_matrix():
         if i_2 >= self.n: 
             i_2 = self.update_A.pop(i_2) 
 
-        if (self.rtot[i_1] >= self.rtot[i_2]) and (i_1 >= self.n and i_2 >= self.n): 
+        if (self.rtot[i_1] > self.rtot[i_2]):
             i_1, i_2 = i_2, i_1
         
         self.update_A[k + self.n] = i_2
@@ -138,7 +138,7 @@ class matching_matrix():
         if j_2 >= self.n: 
             j_2 = self.update_B.pop(j_2)
 
-        if (self.ctot[j_1] >= self.ctot[j_2]) and (j_1 >= self.n and j_2 >= self.n): 
+        if (self.ctot[j_1] > self.ctot[j_2]): 
             j_1, j_2 = j_2, j_1 
 
         self.update_B[k+self.n] = j_2
@@ -162,8 +162,8 @@ class matching_matrix():
         '''
     
         rtot1, rtot2 = self.rtot.pop(i_1), self.rtot[i_2]
-        self.rtot[i_2] = rsum = rtot1 + rtot2
-        self.P += sum([rsum**2, -rtot1**2, -rtot2**2]) // 2
+        self.rtot[i_2] = rtot1 + rtot2
+        self.P += rtot1 * rtot2
     
     def update_column_totals_and_Q(self, j_1, j_2):
     
@@ -183,8 +183,8 @@ class matching_matrix():
         """
         
         ctot1, ctot2 = self.ctot.pop(j_1), self.ctot[j_2]
-        self.ctot[j_2] = csum = ctot1 + ctot2
-        self.Q += sum([csum**2, -ctot1**2, -ctot2**2]) // 2
+        self.ctot[j_2] = ctot1 + ctot2
+        self.Q += ctot1 * ctot2
     
     def update_row_dictionary_and_T(self, i_1, i_2):
     
@@ -223,9 +223,9 @@ class matching_matrix():
                 value_2 = self.columns[elem][i_2]
                 value_new = value_1 + value_2
                 r2[elem] = self.columns[elem][i_2] = value_new
-                st += sum((value_new**2,-value_1**2, -value_2**2))
+                st += value_1 * value_2
 
-        self.T += st // 2
+        self.T += st
         self.rows[i_2] = r2
         
     def update_column_dictionary_and_T(self, j_1, j_2):
@@ -575,7 +575,7 @@ def TPQ_known(A, B, num = None):
  
     return T[:-1], P[:-1], Q[:-1] 
     
-def similarity(T, P, Q, n = None):
+def similarity(T, P, Q, index, n = None):
 
     """
     Calculates an index to determine how similar the two 
@@ -663,7 +663,6 @@ def similarity(T, P, Q, n = None):
 
     elif index == 'J': 
         return jaccard(T, P, Q)
-
 
 def rand(T, P, Q, n):
     N = n * (n-1) // 2 
