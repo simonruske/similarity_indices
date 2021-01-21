@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 from numpy.testing import assert_almost_equal
-from similarity import TPQ_linkages, adjusted_rand
+from similarity import similarity_metrics
 from scipy.cluster.hierarchy import fcluster
 from sklearn.metrics import adjusted_rand_score
  
@@ -35,8 +35,8 @@ class TestAdjustedRand(unittest.TestCase):
       )
       
     # Act
-    T, P, Q = TPQ_linkages(A, B)
-    ar_similarity = adjusted_rand(T, P, Q, 10)
+    metrics = similarity_metrics(A, B)
+    ar_similarity = metrics.adjusted_rand()
     
     ar_sklearn = []
     for i in range(9, 1, -1):

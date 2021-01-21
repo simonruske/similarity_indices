@@ -3,7 +3,7 @@ import numpy as np
 from numpy.testing import assert_almost_equal
 from fastcluster import linkage
 from time import perf_counter
-from similarity import TPQ_linkages, adjusted_rand
+from similarity import similarity_metrics
 from scipy.cluster.hierarchy import fcluster
 from sklearn.metrics import adjusted_rand_score
 
@@ -28,8 +28,8 @@ class Performance(unittest.TestCase):
     
       start = perf_counter()
     
-      T, P, Q = TPQ_linkages(A, B)
-      ar_similarity = adjusted_rand(T, P, Q, n)
+      metrics = similarity_metrics(A, B)
+      ar_similarity = metrics.adjusted_rand()
       
       end = perf_counter()
       

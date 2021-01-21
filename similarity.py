@@ -7,24 +7,13 @@ from matching_matrices.matching_matrix_pairs import matching_matrix_pairs
 from scipy.cluster.hierarchy import is_valid_linkage
 from collections import Counter
 
-def proportion(A, B): 
+class similarity_metrics():
 
-    n = len(A) + 1 
-    prop = np.zeros(n+1)
-    m = matching_matrix_proportion(B, n)
-
-    for k, rows_A in enumerate(A): 
-        m.merge_rows(rows_A[0], rows_A[1], rows_A[3], k)
-        maximums = m.maximums
-        where = m.where 
-        total = 0 
-        for index in Counter(where).keys():
-           total += max(maximums[where == index])
-           prop[len(m.rows)] = float(total) / m.n
-
-    return(prop)
-
-def TPQ_linkages(A, B):
+  def __init__(self, A, B):
+    
+    self.TPQ_linkages(A, B)
+    
+  def TPQ_linkages(self, A, B):
 
     """
     Calculates statistics on two hierarchical clusterings of the same set of objects 
@@ -72,42 +61,20 @@ def TPQ_linkages(A, B):
     if n != n2: 
         raise ValueError("The hierarchical clusterings must be of the same size")
 
-    T = np.zeros(n-1)
-    P = np.zeros(n-1)
-    Q = np.zeros(n-1)
+    self.T = np.zeros(n-2)
+    self.P = np.zeros(n-2)
+    self.Q = np.zeros(n-2)
+    self.n = n
         
     # Creates a new matching matrix (identity of size n)
     m = matching_matrix(n)
     
     # Merges the required clusters as specified by the input files 
     for k, (rows_A, rows_B) in enumerate(zip(A, B)):
-        T[k], P[k], Q[k] = m.merge(rows_A[0], rows_A[1], rows_B[0], rows_B[1], k)
-        
-    #Outputs the values of T, P and Q. 
-    return T[:-1], P[:-1], Q[:-1] 
-        
-def TPQ_known(A, B, num = None):
-
-    '''
-    TODO : Docstring
-    ''' 
-
-    n = len(A) + 1
-    T = np.zeros(n-1)
-    P = np.zeros(n-1)
-    Q = np.zeros(n-1)
-         
-    # Creates a new matching matrix (identity of size n)
-    m = matching_matrix_pairs(B, n)
+      if k != n-2:
+        self.T[k], self.P[k], self.Q[k] = m.merge(rows_A[0], rows_A[1], rows_B[0], rows_B[1], k)
     
-    # Merges the required clusters as specified by the input files 
-    for k, rows_A in enumerate(A):
-        m.merge_rows(rows_A[0], rows_A[1], rows_A[3], k)
-        T[k], P[k], Q[k] = m.T, m.P, m.Q
- 
-    return T[:-1], P[:-1], Q[:-1] 
-    
-def similarity(T, P, Q, index, n = None):
+  def get_index(self, index):
 
     """
     Calculates an index to determine how similar the two 
@@ -115,17 +82,17 @@ def similarity(T, P, Q, index, n = None):
     
     The following indices are available. 
   
-      * index='AR', Adjusted
-        .. math:: 
-           AR_k = \\frac{2T_k-\\frac{P_k Q_k}{n(n-1)}}{P_k+Q_k - \\frac{P_k+Q_k}{n(n-1)}}
-
       * index='R, Rand
         .. math::
-           R_k = \\frac{n(n-1)-2(2 T_k - P_k - Q_k)}{n(n-1)}
+           R = \\frac{n(n-1)-2(2 T_k - P_k - Q_k)}{n(n-1)}
+           
+      * index='AR', Adjusted Rand
+        .. math:: 
+           AR = \\frac{2T_k-\\frac{P_k Q_k}{n(n-1)}}{P_k+Q_k - \\frac{P_k+Q_k}{n(n-1)}}
       
       * index='B', Fowlkes and Mallows index 
         .. math:: 
-           B_k = \\frac{T_k}{\\sqrt{P_k Q_k}}
+           B = \\frac{T_k}{\\sqrt{P_k Q_k}}
      
       * index='S', Morlini and Zani's S index  
         .. math:: 
@@ -134,6 +101,10 @@ def similarity(T, P, Q, index, n = None):
       * index='SK', Morlini and Zani's SK index
         .. math::
            S_k = \\frac{2 T_k}{P_k+Q_k} 
+           
+      * index='J', Jaccard index
+        .. math::
+           J_k = \\frac{T_k}{P_k + Q_k - T_k}
 
     With the exception of the Adjusted Rand each of the indices are defined on 
     the interval :math:`[0,1]` where values close to 1 indicate strong 
@@ -144,19 +115,10 @@ def similarity(T, P, Q, index, n = None):
  
     Parameters
     ----------
-   
-    T : ndarray 
-        The output T from the function TPQ.
-  
-    P : ndarray 
-        The output P from the function TPQ. 
-  
-    Q : ndarray 
-        The output Q from the function TPQ.
-   
-    index : string 
-        Either 'AR', 'R', 'B' or 'S' indicating which index you would 
-        like to use.
+    
+    index : string or list
+        Either 'AR', 'R', 'B', 'S', 'SK', 'J' indicating which index you would 
+        like to use. In the case of list a list of the above
     
     Returns
     -------
@@ -169,71 +131,100 @@ def similarity(T, P, Q, index, n = None):
         and B are after the :math: . For the S-index the result will 
         be a single index.  
 
-    """ 
+    """
     
-    if index == 'S':
-        return s_index(T, P, Q)
+    index_parameter_type = type(index)
+    
+    if index_parameter_type not in [list, t]:
+      raise ValueError("Index must either be a string or a list of indices")
+    
+    if type(index) == str:
+      indices = [index]
+    
+    output = {}
+    
+    for index in indices:
+    
+      index = index.lower()
+    
+      if index in ['r', 'rand']:
+        return rand()
       
-    elif index == 'SK':
-        return sk_index(T, P, Q)
+      elif index in ['ar', 'adjustedrand', 'adjusted_rand']:
+        return adjusted_rand()
       
-    elif index == 'R':
-        if n == None: 
-            n = len(T) + 2
-        return rand(T, P, Q, n)
-    
-    elif index == 'B': 
-        return fowlkes_mallows(T, P, Q)
-    
-    elif index == 'AR': 
-        if n == None: 
-            n = len(T) + 2
-        return adjusted_rand(T, P, Q, n)
+      elif index in ['b', 'fm', 'fowlkesmallows', 'fowlkes_mallows']: 
+        return fowlkes_mallows()
+      
+      elif index in ['s', 'sindex', 's_index']:
+        return s_index()
+        
+      elif index in ['sk', 'skindex', 'sk_index']:
+        return sk_index()
 
-    elif index == 'M':
-        return mirkin(T, P, Q)
-
-    elif index == 'J': 
+      elif index in ['j', 'jaccard']:
         return jaccard(T, P, Q)
+        
+  def rand(self):
+  
+    """
+    Calculates the rand score
+    
+    math::
+      R_k = \\frac{n(n-1)-2(2 T_k - P_k - Q_k)}{n(n-1)}
+    """
+  
+    N = self.n * (self.n - 1) // 2
+    return (N - self.P - self.Q + 2 * self.T) / N 
 
-def rand(T, P, Q, n):
-    N = n * (n-1) // 2 
-    check_TPQ(T, P, Q)
-    return (N - P - Q + 2 * T) / N 
+  def adjusted_rand(self):
 
-def adjusted_rand(T, P, Q, n):
-    N = n * (n-1) // 2
-    check_TPQ(T, P, Q)
-    return  2 * (N * T - P * Q) / (N * (P + Q) - 2 * P * Q)
+    """
+    Calculates the adjusted rand score
+    
+    math:: 
+      AR = \\frac{2T_k-\\frac{P_k Q_k}{n(n-1)}}{P_k+Q_k - \\frac{P_k+Q_k}{n(n-1)}}
+    """
 
-def fowlkes_mallows(T, P, Q):
-    check_TPQ(T, P, Q)
-    return T / np.sqrt(P * Q)
+    N = self.n * (self.n - 1) // 2
+    return  2 * (N * self.T - self.P * self.Q) / (N * (self.P + self.Q) - 2 * self.P * self.Q)
 
-def s_index(T, P, Q):
-    check_TPQ(T, P, Q)
-    return 2 * sum(T[:-1]) / ( sum(P[:-1]) + sum(Q[:-1]) )
+  def fowlkes_mallows(self):
+  
+    """
+    Calculates the Fowlkes and Mallows index 
+    math:: 
+      B = \\frac{T_k}{\\sqrt{P_k Q_k}}
+    """
+    
+    return self.T / np.sqrt(self.P * self.Q)
 
-def sk_index(T, P, Q):
-    check_TPQ(T, P, Q)
+  def s_index(self):
+
+    """
+    Morlini and Zani's S index  
+    math:: 
+      S = \\frac{2 \\sum_{k=2}^{n-1} T_k}{\\sum_{k=2}^{n-1} P_k + \\sum_{k=2}^{n-1} Q_k}
+    """
+
+    return 2 * np.sum(self.T) / ( np.sum(self.P) + np.sum(self.Q))
+
+  def sk_index(self):
+
+    """
+    Morlini and Zani's SK index
+    math::
+      S_k = \\frac{2 T_k}{P_k + Q_k} 
+    """
+
     return 2 * T / (P + Q)
 
-def mirkin(T, P, Q): 
-    check_TPQ(T, P, Q)
-    return 2 * (P + Q - 2*T)
+  def jaccard(self):
+  
+    """
+    Jaccard index
+    math::
+      J_k = \\frac{T_k}{P_k + Q_k - T_k}
+    """
 
-def adjusted_mirkin(T, P, Q, n): 
-    check_TPQ(T, P, Q) 
-    return 2 * (P + Q - 2*T) / n ** 2
-
-def jaccard(T, P, Q): 
-    check_TPQ(T, P, Q) 
     return T / (P + Q - T)
-
-def check_TPQ(T,P,Q): 
-
-    (n, n2, n3) = (len(T), len(P), len(Q))
-    
-    if (n != n2) or (n != n3) or (n2 != n3): 
-        raise InputError("T, P and Q must be vectors of the same length")
-
