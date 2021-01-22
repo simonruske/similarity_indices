@@ -14,15 +14,12 @@ matrices `A` and `B` by doing the following
   ar_similarity = metrics.adjusted_rand()
 ```
 ## Current Priorities
-* Increase the code coverage for the main similarity file 
 * Add better documentation
-* Move the experimental methods into the main file after testing the supporting matching_matrix
+* Move the experimental methods into the main file after testing the supporting matching matrices
 
 ## Coverage
 
-| Module                                          | statements | missing | excluded | coverage |
-|-------------------------------------------------|-----------:|--------:|---------:|---------:|
-| matching_matrices\matching_matrix.py            |         76 |       0 |        0 |     100% |
-| matching_matrices\matching_matrix_pairs.py      |         32 |      29 |        0 |       9% |
-| matching_matrices\matching_matrix_proportion.py |         38 |      34 |        0 |      11% |
-| similarity.py                                   |         61 |      27 |        0 |      56% |
+| Module                               | statements | missing | excluded | coverage |
+|--------------------------------------|-----------:|--------:|---------:|---------:|
+| matching_matrices\matching_matrix.py |         76 |       0 |        0 |     100% |
+| similarity.py                        |         47 |       2 |        0 |      96% |

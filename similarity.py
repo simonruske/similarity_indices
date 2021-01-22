@@ -1,13 +1,23 @@
 import numpy as np
 
 from matching_matrices.matching_matrix import matching_matrix
-from matching_matrices.matching_matrix_proportion import matching_matrix_proportion
-from matching_matrices.matching_matrix_pairs import matching_matrix_pairs
-
 from scipy.cluster.hierarchy import is_valid_linkage
-from collections import Counter
 
 class similarity_metrics():
+
+  '''
+  Class used to get metrics to compare two hierarchical clusterings
+
+  Parameters
+  ----------
+  A : ndarray
+      A :math:`(n-1)` by 4 matrix encoding the linkage
+      (hierarchical clustering).  See ``linkage`` documentation
+      for more information on its form.
+  B : A second :math:`(n-1)` by 4 matrix encoding the linkage
+    (hierarchical clustering).
+
+  '''
 
   def __init__(self, A, B):
     
@@ -93,18 +103,7 @@ class similarity_metrics():
       * index='B', Fowlkes and Mallows index 
         .. math:: 
            B = \\frac{T_k}{\\sqrt{P_k Q_k}}
-     
-      * index='S', Morlini and Zani's S index  
-        .. math:: 
-           S = \\frac{2 \\sum_{k=2}^{n-1} T_k}{\\sum_{k=2}^{n-1} P_k + \\sum_{k=2}^{n-1} Q_k}
 
-      * index='SK', Morlini and Zani's SK index
-        .. math::
-           S_k = \\frac{2 T_k}{P_k+Q_k} 
-           
-      * index='J', Jaccard index
-        .. math::
-           J_k = \\frac{T_k}{P_k + Q_k - T_k}
 
     With the exception of the Adjusted Rand each of the indices are defined on 
     the interval :math:`[0,1]` where values close to 1 indicate strong 
@@ -117,7 +116,7 @@ class similarity_metrics():
     ----------
     
     index : string or list
-        Either 'AR', 'R', 'B', 'S', 'SK', 'J' indicating which index you would 
+        Either 'AR', 'R', 'B', indicating which index you would 
         like to use. In the case of list a list of the above
     
     Returns
@@ -133,13 +132,14 @@ class similarity_metrics():
 
     """
     
-    index_parameter_type = type(index)
-    
-    if index_parameter_type not in [list, t]:
-      raise ValueError("Index must either be a string or a list of indices")
-    
     if type(index) == str:
       indices = [index]
+    
+    elif type(index) == list:
+      indices = index
+
+    else:
+      raise ValueError("Index must either be a string or a list of indices")
     
     output = {}
     
@@ -148,22 +148,15 @@ class similarity_metrics():
       index = index.lower()
     
       if index in ['r', 'rand']:
-        return rand()
+        output[index] = self.rand()
       
       elif index in ['ar', 'adjustedrand', 'adjusted_rand']:
-        return adjusted_rand()
+        output[index] = self.adjusted_rand()
       
       elif index in ['b', 'fm', 'fowlkesmallows', 'fowlkes_mallows']: 
-        return fowlkes_mallows()
+        output[index] = self.fowlkes_mallows()
       
-      elif index in ['s', 'sindex', 's_index']:
-        return s_index()
-        
-      elif index in ['sk', 'skindex', 'sk_index']:
-        return sk_index()
-
-      elif index in ['j', 'jaccard']:
-        return jaccard(T, P, Q)
+    return output
         
   def rand(self):
   
@@ -198,33 +191,3 @@ class similarity_metrics():
     """
     
     return self.T / np.sqrt(self.P * self.Q)
-
-  def s_index(self):
-
-    """
-    Morlini and Zani's S index  
-    math:: 
-      S = \\frac{2 \\sum_{k=2}^{n-1} T_k}{\\sum_{k=2}^{n-1} P_k + \\sum_{k=2}^{n-1} Q_k}
-    """
-
-    return 2 * np.sum(self.T) / ( np.sum(self.P) + np.sum(self.Q))
-
-  def sk_index(self):
-
-    """
-    Morlini and Zani's SK index
-    math::
-      S_k = \\frac{2 T_k}{P_k + Q_k} 
-    """
-
-    return 2 * T / (P + Q)
-
-  def jaccard(self):
-  
-    """
-    Jaccard index
-    math::
-      J_k = \\frac{T_k}{P_k + Q_k - T_k}
-    """
-
-    return T / (P + Q - T)
