@@ -23,9 +23,7 @@ class TestMatchingMatrix(unittest.TestCase):
     self.assertEqual(0, m.P)
     self.assertEqual(0, m.Q)
     
-    self.assertDictEqual({}, m.sizes_A)
     self.assertDictEqual({}, m.update_A)
-    self.assertDictEqual({}, m.sizes_B)
     self.assertDictEqual({}, m.update_B)
   
   def test_relabel_A_clusters_each_with_one_point(self):

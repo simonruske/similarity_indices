@@ -39,10 +39,8 @@ class matching_matrix():
         self.P = 0 
         self.Q = 0 
 
-        # Dictionaries used for the relabelling procedure   
-        self.sizes_A = {}
+        # Dictionaries used for the relabelling procedure
         self.update_A = {}
-        self.sizes_B = {}
         self.update_B = {}
 
     def relabel_A(self, i_1, i_2, k):
@@ -207,22 +205,20 @@ class matching_matrix():
         
         """
         
-        r1, r2, st = self.rows.pop(i_1), self.rows[i_2], 0
+        r1, r2 = self.rows.pop(i_1), self.rows[i_2]
 
         for elem in r1: 
-          
-            if elem not in r2:
-                r2[elem] = self.columns[elem][i_2] = self.columns[elem].pop(i_1)
- 
-            else: 
+
+            if elem in r2:
                 value_1 = self.columns[elem].pop(i_1)
                 value_2 = self.columns[elem][i_2]
                 value_new = value_1 + value_2
                 r2[elem] = self.columns[elem][i_2] = value_new
-                st += value_1 * value_2
+                self.T += value_1 * value_2
 
-        self.T += st
-        self.rows[i_2] = r2
+            else:
+                r2[elem] = self.columns[elem][i_2] = self.columns[elem].pop(i_1)
+ 
         
     def update_column_dictionary_and_T(self, j_1, j_2):
     
@@ -249,22 +245,20 @@ class matching_matrix():
         
         """
         
-        c1, c2, st = self.columns.pop(j_1), self.columns[j_2], 0  
+        c1, c2 = self.columns.pop(j_1), self.columns[j_2]
         
         for elem in c1: 
  
-            if elem not in c2:
-                c2[elem] = self.rows[elem][j_2] = self.rows[elem].pop(j_1)
-
-            else: 
+            if elem in c2:
                 value_1 = self.rows[elem].pop(j_1) 
                 value_2 = self.rows[elem][j_2] 
                 value_new = value_1 + value_2 
                 c2[elem] = self.rows[elem][j_2] = value_new 
-                st += sum((value_new**2,-value_1**2, -value_2**2))
+                self.T += value_1 * value_2
 
-        self.columns[j_2] = c2
-        self.T += st // 2
+            else:
+                c2[elem] = self.rows[elem][j_2] = self.rows[elem].pop(j_1)
+
     
     def merge_rows(self, i_1, i_2, k): 
     
