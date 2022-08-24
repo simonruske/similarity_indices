@@ -1,3 +1,7 @@
+from .matching_matrices import matching_matrix_proportion, matching_matrix_pairs
+from collections import Counter
+import numpy as np
+
 def proportion(A, B): 
 
     n = len(A) + 1 
@@ -16,10 +20,6 @@ def proportion(A, B):
     return(prop)
 
 def TPQ_known(A, B, num = None):
-
-    '''
-    TODO : Docstring
-    ''' 
 
     n = len(A) + 1
     T = np.zeros(n-1)

@@ -1,3 +1,6 @@
+from collections import Counter
+import numpy as np
+
 class matching_matrix_proportion():
 
     def __init__(self, sol, n, * args, **kwargs):        
