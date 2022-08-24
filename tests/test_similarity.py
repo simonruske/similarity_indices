@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_equal
-from similarity import similarity_metrics
+from library.similarity import similarity_metrics
 from scipy.cluster.hierarchy import fcluster
 from sklearn.metrics import adjusted_rand_score, fowlkes_mallows_score 
 from sklearn.metrics.cluster import contingency_matrix

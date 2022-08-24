@@ -1,5 +1,5 @@
 import unittest
-from matching_matrices.matching_matrix import matching_matrix
+from library.matching_matrices.matching_matrix import matching_matrix
 
 class TestMatchingMatrix(unittest.TestCase):
   

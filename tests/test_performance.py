@@ -3,7 +3,7 @@ import numpy as np
 from numpy.testing import assert_almost_equal
 from fastcluster import linkage
 from time import perf_counter
-from similarity import similarity_metrics
+from library.similarity import similarity_metrics
 from scipy.cluster.hierarchy import fcluster
 from sklearn.metrics import adjusted_rand_score
 

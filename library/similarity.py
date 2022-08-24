@@ -1,6 +1,6 @@
 import numpy as np
 
-from matching_matrices.matching_matrix import matching_matrix
+from library.matching_matrices.matching_matrix import matching_matrix
 from scipy.cluster.hierarchy import is_valid_linkage
 
 class similarity_metrics():

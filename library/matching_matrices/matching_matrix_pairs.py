@@ -1,3 +1,5 @@
+from collections import Counter
+
 class matching_matrix_pairs():
 
     """        
